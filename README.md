@@ -121,34 +121,6 @@ The reference models minimize the **makespan**, denoted by `C_max`. They receive
 
 The workbook provides objective values rather than complete operation-by-operation schedules.
 
-## Using the Dataset
-
-Use the natural-language scenario description and common processing instance as model inputs. The formulations, reference code, and reference objectives are annotations for evaluation; exclude them from LLM prompts when measuring independent modeling capability.
-
-For example, load a scenario as follows:
-
-```python
-import json
-from pathlib import Path
-
-root = Path(".")  # Repository root
-path = root / "constraints" / "1+2+3.json"
-records = json.loads(path.read_text(encoding="utf-8"))
-
-record_number = 10
-record = records[record_number - 1]
-instance_id = f"{path.stem}_{record_number}"
-description = record[f"constraint{record_number}"]
-processing_data = root / "scheduling_data" / "FJSP_data.txt"
-```
-
-Evaluate whether the generated formulation captures the stated scope, time bounds, machine conditions, and dependencies. When solving generated models, compare objective values with the reference workbook and also verify schedule feasibility against all stated constraints. Matching a makespan alone does not establish semantic correctness.
-
-Single-category and combined-category scenarios share constituent requirements. Account for this relationship when constructing training and evaluation splits.
-
-### Published data corrections
-
-In this release, the job 6 waiting-window requirement in `3_10`, `1+2+3_10`, and `1+2+3+4+5+6_10` is implemented consistently as **15 <= waiting time <= 30**, including both boundaries. Their reference optimal makespans were rechecked and remain **609**, **629**, and **1087**, respectively. This is a corrected data release; the revised descriptions should not be assumed to reproduce the exact original evaluation prompts.
 
 ## License
 
