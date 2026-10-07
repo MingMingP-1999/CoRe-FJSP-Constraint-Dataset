@@ -21,9 +21,20 @@ The benchmark contains:
 - **60 single-category scenarios:** 10 scenarios for each of six extension-constraint categories.
 - **80 combined-category scenarios:** 10 scenarios for each of eight category combinations.
 - Chinese natural-language descriptions, reference mathematical formulations, reference code snippets, and complete reference models.
+- English translations of all 140 single-category and combined-category scenarios.
 - The underlying processing data and reference optimal makespan values for all 140 scenarios.
 
 The original Chinese descriptions are preserved as benchmark inputs.
+
+### Language Versions
+
+`constraints/` contains all 140 Chinese scenarios. `constraints_en/` contains English translations of all 140 scenarios in the same 14 files. English translations use the same filenames, record order, field names, processing instance, and reference objectives as their Chinese counterparts. They do not add new scheduling scenarios.
+
+The five standard FJSP requirements are expressed using ten equivalent English phrasings, with the same phrasing used for a given record number across the six categories. Extension descriptions preserve the target jobs or machines, time bounds, conditions, and inclusive boundaries. Reference code comments are translated, while executable Python statements are unchanged. Mathematical formulas are preserved except for translated annotation labels and the Job 1 subscript correction described below.
+
+Combined descriptions reuse the English constituent requirements for the corresponding record number in each included category. Comparing all 250 constituent constraints across the 80 combined scenarios found one parameter adjustment: in `1+2+3+4+5+6_4`, the maximum waiting time between consecutive operations of every job is **100**, whereas in the single-category scenario `3_4` it is **40**. The English combination preserves the bound of 100 in its description, formulation, and reference model. All other constituent requirements match their single-category counterparts, apart from annotation numbering.
+
+The English descriptions are translated benchmark inputs. Evaluate them separately when reporting language-specific LLM results; the paper's reported results should not be assumed to apply to these English prompts.
 
 ## Repository Structure
 
@@ -46,12 +57,27 @@ CoRe-FJSP-Constraint-Dataset/
 │   ├── 5+6.json
 │   ├── 1+4+5+6.json
 │   └── 1+2+3+4+5+6.json
+├── constraints_en/
+│   ├── 1.json
+│   ├── 2.json
+│   ├── 3.json
+│   ├── 4.json
+│   ├── 5.json
+│   ├── 6.json
+│   ├── 1+2.json
+│   ├── 1+2+3.json
+│   ├── 1+4+5.json
+│   ├── 1+5+6.json
+│   ├── 4+6.json
+│   ├── 5+6.json
+│   ├── 1+4+5+6.json
+│   └── 1+2+3+4+5+6.json
 └── scheduling_data/
     ├── FJSP_data.txt
     └── reference_solutions.xlsx
 ```
 
-`constraints/` contains the scenario descriptions and their reference annotations. `scheduling_data/` contains the common physical processing instance and the reference objective values.
+`constraints/` contains the Chinese scenario descriptions and their reference annotations. `constraints_en/` contains the complete English translations. `scheduling_data/` contains the common physical processing instance and the reference objective values shared by both language versions.
 
 ## Constraint Categories
 
@@ -93,6 +119,8 @@ The items in `formulaN` and `codeN` correspond to the extension categories in fi
 An instance ID is `<filename_without_extension>_<record_number>`, with record numbers starting at 1. For example, `1+2+3_10` identifies the tenth record in `constraints/1+2+3.json`. The suffix in a field name identifies the record, not the extension category. Historical equation and comment labels are annotations and should not be used as instance IDs.
 
 Natural-language job and machine labels use 1-based numbering, while the reference Python models use 0-based array indices. Some mathematical annotations retain legacy index labels; interpret them together with their paired descriptions and reference code.
+
+In English scenario `2_9` and record 9 of every combination containing category 2, the completion-window formula uses `B_{1,n_1}`, `K_{1,n_1}`, `pt_{1,n_1,k}`, and `X_{1,n_1,k}` for Job 1. This corrects the legacy Job 0 subscripts in the Chinese annotations. The Python models still use index `0` for Job 1, and their optimization logic and reference objectives are unchanged.
 
 The reference models minimize the **makespan**, denoted by `C_max`. They receive processing parameters as inputs rather than embedding the processing instance in the JSON. Some transportation reference formulations use products of binary assignment variables, handled by Gurobi's quadratic-constraint interface or an equivalent linearization.
 
@@ -141,6 +169,8 @@ instance_id = f"{path.stem}_{record_number}"
 description = record[f"constraint{record_number}"]
 processing_data = root / "scheduling_data" / "FJSP_data.txt"
 ```
+
+For an English scenario, select a file from `constraints_en/`, for example `root / "constraints_en" / "3.json"`. The loading procedure and instance ID convention are the same. Record the selected language alongside the instance ID in evaluation results.
 
 Evaluate whether the generated formulation captures the stated scope, time bounds, machine conditions, and dependencies. When solving generated models, compare objective values with the reference workbook and also verify schedule feasibility against all stated constraints. Matching a makespan alone does not establish semantic correctness.
 
